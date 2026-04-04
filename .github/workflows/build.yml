@@ -1,52 +1,58 @@
-name: Build Airsaned packages
-
+name: build
 on:
-  workflow_call:
   workflow_dispatch:
 
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        wrtrel:
-          - 25.12.2
-        sdk:
-          - mediatek-filogic
-
     runs-on: ubuntu-latest
-    continue-on-error: true
-
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: true
+      matrix:
+        release:
+          - 25.12.2
+        arch:
+          - mediatek-filogic
     steps:
       - name: Checkout current repository
         uses: actions/checkout@v6
 
-      - name: Build Airsaned package for OpenWRT
-        uses: cmangla/gh-action-sdk@pr-hash-fixup-option
-        env:
-          ARCH: ${{ matrix.sdk }}-${{ matrix.wrtrel }}
-          EXTRA_FEEDS: src-git|airsaned|${{ github.server_url }}/${{ github.repository }}.git^${{ github.sha }}
-          PACKAGES: airsaned
-          FIXUP: 1
-          V: w # s=(stdout+stderr), w=warnings, c=commands
-
-      - name: Verify package was built
+      - name: Extract package version
+        id: get_version
         run: |
-          if ! find bin/packages -name 'airsaned*.apk' -type f | grep -q .; then
-            echo "ERROR: No airsaned package found in bin/packages"
-            exit 1
-          fi
-          echo "✓ Package built successfully"
-          find bin/packages -name 'airsaned*.apk' -type f -exec ls -lh {} \;
+          PKG_VERSION=$(grep -r '^PKG_VERSION:=' | cut -d '=' -f2)
+          echo "pkg_version=$PKG_VERSION" >> $GITHUB_OUTPUT
 
-      - name: Obtain full package version
-        run: bash ./.github/work.sh pkg-ver airsaned/Makefile | tee $GITHUB_ENV
-        shell: bash
+      - name: Build package for OpenWRT
+        uses: openwrt/gh-action-sdk@main
+        env:
+          ARCH: ${{ matrix.arch }}-${{ matrix.release }}
+          PACKAGES: airsaned
+          NO_SHFMT_CHECK: true
+          INDEX: 1
+          PRIVATE_KEY: ${{ secrets.SIGNKEY }}
+          V: w
 
-      - uses: actions/upload-artifact@v7
+      - name: Extract public key from signing key
+        if: env.HAS_SIGNKEY == 'true'
+        env:
+          HAS_SIGNKEY: ${{ secrets.SIGNKEY != '' }}
+        run: |
+          echo "${{ secrets.SIGNKEY }}" | openssl ec -pubout -out openwrt-daxcore.pem
+
+      - name: Upload package
+        uses: actions/upload-artifact@v7
         with:
-          name: airsaned_${{ env.PKG_FULL_VERSION }}_openwrt-${{ matrix.wrtrel }}_${{ matrix.sdk }}.apk.d
-          path: bin/packages/**/airsaned*.apk
-          retention-days: 7
-          if-no-files-found: error
+          name: airsaned-${{ steps.get_version.outputs.pkg_version }}-openwrt-${{ matrix.release }}-${{ matrix.arch }}
+          path: |
+            bin/packages/**/airsaned*.apk
 
+      - name: Release package
+        uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
+        with:
+          files: |
+            bin/packages/**/action/airsaned*.apk
+            bin/packages/**/action/packages.adb
+            openwrt-daxcore.pem

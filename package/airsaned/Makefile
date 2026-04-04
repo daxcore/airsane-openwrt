@@ -1,14 +1,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=airsaned
+PKG_VERSION:=0.4.9
 PKG_RELEASE:=1
 
-PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=https://github.com/SimulPiscator/AirSane.git
-PKG_SOURCE_VERSION:=291513fe0fc8327ebc086447caeb9f0672865faf
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+PKG_SOURCE_URL:=https://codeload.github.com/SimulPiscator/AirSane/tar.gz/v$(PKG_VERSION)?
 PKG_SOURCE_DATE:=2026-02-18
-PKG_VERSION:=0.4.9
-PKG_MIRROR_HASH:=skip
+PKG_HASH:=b8be7057c20ad896b3303a2ac2fe481ccf73933a59b105724ca0467896853dde
 
 PKG_MAINTAINER:=SimulPiscator <example@example.com>
 PKG_LICENSE:=GPL-3.0
@@ -20,6 +19,9 @@ PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/cmake.mk
+
+TAR_OPTIONS:=--strip-components 1 $(TAR_OPTIONS)
+TAR_CMD=$(HOST_TAR) -C $(1) $(TAR_OPTIONS)
 
 define Package/airsaned
   TITLE:=A SANE WebScan frontend that supports Apple's AirScan protocol
