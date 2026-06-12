@@ -1,13 +1,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=airsaned
-PKG_VERSION:=0.4.9
+PKG_VERSION:=0.4.12
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/SimulPiscator/AirSane/tar.gz/v$(PKG_VERSION)?
-PKG_SOURCE_DATE:=2026-02-18
-PKG_HASH:=b8be7057c20ad896b3303a2ac2fe481ccf73933a59b105724ca0467896853dde
+PKG_HASH:=2697bdbfb709972834d782a53d1ef52c9f7714a06d286ae6b4c8d06f04da6106
 
 PKG_MAINTAINER:=SimulPiscator <example@example.com>
 PKG_LICENSE:=GPL-3.0
