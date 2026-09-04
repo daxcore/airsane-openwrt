@@ -1,4 +1,5 @@
 #!/bin/sh /etc/rc.common
+# forked from https://github.com/notandy/AirSane-openwrt
 START=95
 STOP=10
 
@@ -28,13 +29,13 @@ start_service() {
 	config_get access_log "$cfg" 'access_log' '-'
 	config_get hotplug "$cfg" 'hotplug' true
 	config_get mdns_announce "$cfg" 'mdns_announce' true
-	config_get local_scanners_only "$cfg" 'local_scanners_only' true
+	config_get local_scanners_only "$cfg" 'local_scanners_only' false
 	config_get debug "$cfg" 'debug' false
 	config_get compatible_path "$cfg" 'compatible_path' true
 	config_get announce_secure "$cfg" 'announce_secure' false
 	config_get unix_socket "$cfg" 'unix_socket' ''
 	config_get web_interface "$cfg" 'web_interface' true
-	config_get reset_option "$cfg" 'reset_option' true
+	config_get reset_option "$cfg" 'reset_option' false
 	config_get disclose_version "$cfg" 'disclose_version' true
 	config_get random_paths "$cfg" 'random_paths' false
 
